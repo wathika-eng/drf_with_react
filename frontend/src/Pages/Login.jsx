@@ -1,9 +1,11 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-
+import Form from '../Components/Form';
 const Login = () => {
     return (
-        <div>No Account? <Navigate to="/register" /></div>
+        <>
+            <Form route="api/token" method="login" />
+        </>
     );
 };
 
