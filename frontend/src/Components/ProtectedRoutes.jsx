@@ -44,7 +44,7 @@ const ProtectedRoute = () => {
             const tokenExpiry = decoded.exp;
             const now = Date.now() / 1000; //get it in seconds not ms
             if (tokenExpiry < now) { //if token already expired, refresh it else is valid
-                await refresh_token;
+                await refresh_token();
             } else {
                 setisAuthorized(true);
                 setLoading(true);
@@ -52,11 +52,8 @@ const ProtectedRoute = () => {
         }
     };
     if (isAuthorized === null) {
-        {
-            loading && <div>Loading...</div>;
-        }
+        return <div>Loading...</div>; // Return the loading indicator JSX
     } else {
-        setLoading(false);
         return isAuthorized ? <div>Good</div> : <Navigate to="/login" />;
     }
 };
