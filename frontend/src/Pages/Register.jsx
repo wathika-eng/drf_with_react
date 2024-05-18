@@ -2,7 +2,7 @@ import React from 'react';
 import Form from '../Components/Form';
 const Register = () => {
     return (
-        <Form route="/api/user/registration/" method="register" />
+        <Form route="/api/user/register/" method="register" />
     );
 };
 

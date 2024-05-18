@@ -1,60 +1,57 @@
-// all routes here need authorization
-import { Navigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import api from '../Api';
-import { REFRESH_TOKEN, ACCESS_TOKEN } from '../constants';
-import { useEffect, useState } from 'react';
+import { Navigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import Api from "../Api";
+import { REFRESH_TOKEN, ACCESS_TOKEN } from "../constants";
+import { useState, useEffect } from "react";
 
-//stop someone from accessing a url in the frontend without login, else redirect
 
-const ProtectedRoute = () => {
-    const [isAuthorized, setisAuthorized] = useState(null);
-    const [loading, setLoading] = useState(true);
+function ProtectedRoute({ children }) {
+    const [isAuthorized, setIsAuthorized] = useState(null);
 
     useEffect(() => {
-        auth().catch(() => setisAuthorized(false));
+        auth().catch(() => setIsAuthorized(false));
     }, []);
 
-    const refresh_token = async () => {
-        const newToken = localStorage.getItem(REFRESH_TOKEN);
+    const refreshToken = async () => {
+        const refreshToken = localStorage.getItem(REFRESH_TOKEN);
         try {
-            const res = await api.post("/api/token/refresh/", {
-                refresh: newToken,
+            const res = await Api.post("/api/token/refresh/", {
+                refresh: refreshToken,
             });
             if (res.status === 200) {
                 localStorage.setItem(ACCESS_TOKEN, res.data.access);
-                setisAuthorized(true);
-
+                setIsAuthorized(true);
             } else {
-                setisAuthorized(false);
+                setIsAuthorized(false);
             }
         } catch (error) {
-            setisAuthorized(false);
-            console.error(error);
+            console.log(error);
+            setIsAuthorized(false);
         }
-
     };
+
     const auth = async () => {
         const token = localStorage.getItem(ACCESS_TOKEN);
         if (!token) {
-            setisAuthorized(false); //if no token exit this fn
+            setIsAuthorized(false);
             return;
-        } else { //else get the token, validate it
-            const decoded = jwtDecode(token);
-            const tokenExpiry = decoded.exp;
-            const now = Date.now() / 1000; //get it in seconds not ms
-            if (tokenExpiry < now) { //if token already expired, refresh it else is valid
-                await refresh_token();
-            } else {
-                setisAuthorized(true);
-                setLoading(true);
-            }
+        }
+        const decoded = jwtDecode(token);
+        const tokenExpiration = decoded.exp;
+        const now = Date.now() / 1000;
+
+        if (tokenExpiration < now) {
+            await refreshToken();
+        } else {
+            setIsAuthorized(true);
         }
     };
+
     if (isAuthorized === null) {
-        return <div>Loading...</div>; // Return the loading indicator JSX
-    } else {
-        return isAuthorized ? <div>Good</div> : <Navigate to="/login" />;
+        return <div>Loading...</div>;
     }
-};
+
+    return isAuthorized ? children : <Navigate to="/login" />;
+}
+
 export default ProtectedRoute;
